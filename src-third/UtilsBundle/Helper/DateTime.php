@@ -35,16 +35,14 @@ class DateTime extends \DateTime
     public static function fromFormat(string $format, $time): DateTime
     {
         $time = intval(\DateTime::createFromFormat($format, strval($time))->format("U"));
-        $now = intval((new \DateTime("now"))->format("U"));
+        $now  = intval((new \DateTime("now"))->format("U"));
 
         $diff = $time - $now;
         if ($diff === 0) {
             return new DateTime("present");
-        }
-        else if ($diff > 0) {
+        } else if ($diff > 0) {
             return new DateTime("+$diff seconds");
-        }
-        else {
+        } else {
             return new DateTime("$diff seconds");
         }
     }
@@ -57,8 +55,7 @@ class DateTime extends \DateTime
     {
         if ($time == "now") {
             $time = Calendar::getInstance()->getOffset();
-        }
-        else {
+        } else {
             if ($time == "present") {
                 $time = "now";
             }
@@ -125,7 +122,7 @@ class DateTime extends \DateTime
      */
     public function getDiffInSeconds(?DateTime $date = null): int
     {
-        $date = $date ?? new DateTime;
+        $date = $date ?? new DateTime();
 
         $diffValue = $date->getTime() - $this->getTime();
 
@@ -149,7 +146,7 @@ class DateTime extends \DateTime
      */
     public function getDiffInDays(?DateTime $date = null): int
     {
-        $date = $date ?? new DateTime;
+        $date = $date ?? new DateTime();
         $diff = $this->diff($date);
 
         $diffValue = $diff->format("%a");
@@ -163,7 +160,7 @@ class DateTime extends \DateTime
      */
     public function getDiffInWeeks(?DateTime $date = null): int
     {
-        $date = $date ?? new DateTime;
+        $date = $date ?? new DateTime();
         $diff = $this->diff($date);
 
         $diffValue = floor($diff->format("%a") / 7);
@@ -177,7 +174,7 @@ class DateTime extends \DateTime
      */
     public function getDiffInMonths(?DateTime $date = null): int
     {
-        $date = $date ?? new DateTime;
+        $date = $date ?? new DateTime();
         $diff = $this->diff($date);
 
         $diffValue = $diff->format("%m") + 12 * $this->getDiffInYears($date);
@@ -191,7 +188,7 @@ class DateTime extends \DateTime
      */
     public function getDiffInYears(?DateTime $date = null): int
     {
-        $date = $date ?? new DateTime;
+        $date = $date ?? new DateTime();
         $diff = $this->diff($date);
 
         $diffValue = $diff->format("%y");
@@ -273,7 +270,7 @@ class DateTime extends \DateTime
      */
     public function hasExpired(): bool
     {
-        return $this->compare(new DateTime) <= 2;
+        return $this->compare(new DateTime()) <= 2;
     }
 
     /**
@@ -288,5 +285,22 @@ class DateTime extends \DateTime
             $this->compare($to) <= 0
         );
     }
+
+    /**
+     * @return int
+     */
+    public function getMilis(): int
+    {
+        return $this->getTime() * 1000 + intval($this->format('v'));
+    }
+
+    /**
+     * @return int
+     */
+    public function getMicros(): int
+    {
+        return $this->getTime() * 1000000 + intval(substr(microtime(), 2, 6));
+    }
+
 
 }
