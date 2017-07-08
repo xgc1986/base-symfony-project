@@ -12,7 +12,11 @@ class JsonResponse extends \Symfony\Component\HttpFoundation\JsonResponse
         $ret['status'] = $status;
 
         foreach ($data as $key => $value) {
-           JsonHelper::getInstance()->encode($value, $ret, $key);
+            if ($key !== "stack_trace") {
+                JsonHelper::getInstance()->encode($value, $ret, $key);
+            } else {
+                $ret[$key] = $value;
+            }
         }
 
         ksort($ret);

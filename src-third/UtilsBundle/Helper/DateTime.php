@@ -82,7 +82,7 @@ class DateTime extends \DateTime
     public static function fromWeek(int $week): DateTime
     {
         $weekStart = new DateTime();
-        $weekStart->getOriginal()->setISODate($weekStart->format("Y"), $week % 52);
+        $weekStart->setISODate($weekStart->format("Y"), $week % 52);
 
         return $weekStart;
     }
@@ -93,8 +93,6 @@ class DateTime extends \DateTime
      */
     public static function fromDay(int $day): DateTime
     {
-        $year = DateTime::create()->format("Y");
-
         return DateTime::fromFormat("z", DateTime::fromFormat("z", $day)->format("z"));
     }
 
@@ -177,7 +175,7 @@ class DateTime extends \DateTime
         $date = $date ?? new DateTime();
         $diff = $this->diff($date);
 
-        $diffValue = $diff->format("%m") + 12 * $this->getDiffInYears($date);
+        $diffValue = intval($diff->format("%m")) + 12 * $this->getDiffInYears($date);
 
         return intval($diffValue);
     }

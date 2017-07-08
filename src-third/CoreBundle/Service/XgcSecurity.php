@@ -69,15 +69,11 @@ class XgcSecurity
 
     public function login(string $fqn, string $firewall, string $username, string $password, bool $remember): User
     {
-        $user =
-            $this->doctrine->getRepository($fqn)->findOneBy(['username' => $username]) ??
-            $this->doctrine->getRepository($fqn)->findOneBy(['email' => $username]);
+        $user = $this->find($fqn, $username);
 
         if (!$user) {
             throw new AccessDeniedException();
         }
-
-        $user = $this->castToUser($user);
 
         if (!$this->hasPassword($user, $password)) {
             throw new AccessDeniedException();
@@ -169,7 +165,8 @@ class XgcSecurity
 
     public function resetPassword(string $fqn, string $token, string $password, string $password2): User
     {
-        $user = $this->castToUser($this->doctrine->getRepository($fqn)->findOneBy(['resetPasswordToken' => $token]));
+        /** @var null|User $user */
+        $user = $this->doctrine->getRepository($fqn)->findOneBy(['resetPasswordToken' => $token]);
 
         if (!$user) {
             throw new ResourceNotFoundException('token');
@@ -179,7 +176,7 @@ class XgcSecurity
             throw new ResourceNoLongerAvailableException('token');
         }
 
-        if ($user->getResetPasswordTokenAt()->getRelativeTime() >= -24 * 60 * 60) {
+        if ($user->getResetPasswordTokenAt()->getDiffInDays() >= 1) {
             // If 1 day have passed
             $user->setResetPasswordTokenAt(null);
             $user->setResetPasswordToken(null);
@@ -209,11 +206,6 @@ class XgcSecurity
         return $user;
     }
 
-    private function castToUser($object): User
-    {
-        return $object;
-    }
-
     public function logout(): void
     {
         $this->tokenStorage->setToken(null);
@@ -222,7 +214,8 @@ class XgcSecurity
 
     public function enable(string $fqn, string $token): User
     {
-        $user = $this->castToUser($this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $token]));
+        /** @var null|User $user */
+        $user = $this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $token]);
 
         if ($user->isLocked()) {
             throw new AccountDissabledException();
@@ -236,8 +229,7 @@ class XgcSecurity
             throw new ResourceNoLongerAvailableException('token');
         }
 
-        if ($user->getRegisterTokenAt()->getRelativeTime() >= -24 * 60 * 60) {
-            // If 1 day have passed
+        if ($user->getRegisterTokenAt()->getDiffInDays() >= 1) {
             $user->setRegisterTokenAt(null);
             $user->setRegisterToken(null);
             $this->doctrine->getManager()->flush();
@@ -251,7 +243,8 @@ class XgcSecurity
 
     public function addResetPasswordToken(string $fqn, string $email): User
     {
-        $user = $this->castToUser($this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $email]));
+        /** @var null|User $user */
+        $user = $this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $email]);
 
         if (!$user) {
             throw new ResourceNotFoundException('email');
@@ -267,7 +260,8 @@ class XgcSecurity
 
     public function addRegisterToken(string $fqn, string $email): User
     {
-        $user = $this->castToUser($this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $email]));
+        /** @var null|User $user */
+        $user = $this->doctrine->getRepository($fqn)->findOneBy(['registerToken' => $email]);
 
         if (!$user) {
             throw new ResourceNotFoundException('token');
@@ -322,5 +316,13 @@ class XgcSecurity
     public function deleteUser(User $user)
     {
         $this->doctrine->flush($user);
+    }
+
+    private function find(string $fqn, string $username): ?User
+    {
+        /** @var null|User $user */
+        $user = $this->doctrine->getRepository($fqn)->findOneBy(['email' => $username]) ??
+               $this->doctrine->getRepository($fqn)->findOneBy(['username' => $username]);
+        return $user;
     }
 }

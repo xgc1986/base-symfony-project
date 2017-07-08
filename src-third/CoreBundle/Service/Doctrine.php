@@ -86,7 +86,6 @@ class Doctrine extends Registry
 
         foreach ($entities as $entity) {
             if ($entity) {
-                $this->validator->validate($entity);
                 $this->getManager()->remove($entity);
             }
         }

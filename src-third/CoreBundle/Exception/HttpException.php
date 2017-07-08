@@ -2,8 +2,6 @@
 declare(strict_types = 1);
 namespace Xgc\CoreBundle\Exception;
 
-use Exception;
-use Symfony\Component\HttpFoundation\Response;
 use Xgc\CoreBundle\Helper\SymfonyHelper;
 
 abstract class HttpException extends \Symfony\Component\HttpKernel\Exception\HttpException
